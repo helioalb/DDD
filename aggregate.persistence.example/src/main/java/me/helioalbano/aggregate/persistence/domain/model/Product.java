@@ -13,21 +13,15 @@ public class Product {
     }
 
     private void setName(String name) {
-    	if (name == null) {
-    		throw new ProductMissingNameException(
-    				"O nome do produto deve ser informado");
-    	} else {
-    		this.name = name;
-    	}
+    	if (name == null) throw new ProductMissingNameException(
+    			"O nome do produto deve ser informado");
+    	this.name = name;
     }
 
     private void setPrice(Money price) {
-        if (price == null) {
-            throw new ProductMissingPriceException(
-                "O preço do produto deve ser informado");
-        } else {
-            this.price = price;
-        }
+        if (price == null) throw new ProductMissingPriceException(
+        		"O preço do produto deve ser informado");
+        this.price = price;
     }
 
     public String getName() {
