@@ -9,7 +9,7 @@ import me.helioalbano.aggregate.persistence.domain.model.exceptions.ProductMissi
 import me.helioalbano.aggregate.persistence.domain.model.exceptions.ProductMissingPriceException;
 
 public class ProductTest {
-    
+
     @Test
     public void testConstructionOfProduct() {
         Money price = new Money(Currency.BRL, 10000);
@@ -19,10 +19,10 @@ public class ProductTest {
         assertEquals("Domain-Driven Design Destiled", book.getName());
         assertEquals(10000, book.getPrice().getAmount());
     }
-    
+
     @Test
     public void testConstructionOfProductWithoutPrice() {
-        Exception exception = 
+        Exception exception =
         		assertThrows(ProductMissingPriceException.class, () -> {
         			new Product("Clean code", null);
         		});
@@ -30,10 +30,10 @@ public class ProductTest {
         String expectedMessage = "O preço do produto deve ser informado";
         assertEquals(expectedMessage, exception.getMessage());
     }
-    
+
     @Test
     public void testConstructionOfProductWithoutName() {
-        Exception exception = 
+        Exception exception =
         		assertThrows(ProductMissingNameException.class, () -> {
         			Money price = new Money(Currency.BRL, 10000);
         			new Product(null, price);

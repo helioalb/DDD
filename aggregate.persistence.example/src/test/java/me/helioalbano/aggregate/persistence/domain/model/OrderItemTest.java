@@ -15,53 +15,53 @@ public class OrderItemTest {
 		Product book = new Product("Livro", new Money(Currency.BRL, 10000));
 
 		OrderItem item = new OrderItem(book, 3);
-		
+
 		assertEquals("Livro", item.getProduct().getName());
 		assertEquals(3, item.getQuantity());
 	}
-	
+
 	@Test
 	public void testConstructionOfOrderItemWithoutProduct() {
-		Exception exception = 
+		Exception exception =
 				assertThrows(OrderItemMissingProductException.class, () -> {
 					new OrderItem(null, 2);
 		});
-		
+
 		String expectedMessage = "O item está sem um produto associado";
-		
+
 		assertEquals(expectedMessage, exception.getMessage());
 	}
-	
+
 	@Test
 	public void testConstructionOfOrderItemWithNegativeQuantity() {
 		Product book = new Product("Livro", new Money(Currency.BRL, 10000000));
-		
-		Exception exception = 
+
+		Exception exception =
 				assertThrows(OrderItemNegativeQuantityException.class, () -> {
 					new OrderItem(book, -2);
 		});
-		
+
 		String expectedMessage = "Quantidade de items não pode ser negativa";
 		assertEquals(expectedMessage, exception.getMessage());
 	}
-	
+
 	@Test
 	public void testConstructionOfOrderItemWithZeroQuantity() {
 		Product book = new Product("Livro", new Money(Currency.BRL, 10000000));
-		
-		Exception exception = 
+
+		Exception exception =
 				assertThrows(OrderItemZeroQuantityException.class, () -> {
 					new OrderItem(book, 0);
 		});
-		
+
 		String message = "Quantidade de items não pode ser igual a zero";
-		assertEquals(message, exception.getMessage());	
+		assertEquals(message, exception.getMessage());
 	}
-	
+
 	@Test
 	public void testOrderItemCost() {
 		Product book = new Product("Livro", new Money(Currency.BRL, 100));
 		OrderItem item = new OrderItem(book, 2);
-		assertEquals(200, item.cost());	
+		assertEquals(200, item.cost().getAmount());
 	}
 }
