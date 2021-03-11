@@ -1,4 +1,4 @@
-package me.helioalbano.aggregate.persistence.example.usecases;
+package me.helioalbano.aggregate.persistence.usecases;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,7 +12,7 @@ import me.helioalbano.aggregate.persistence.domain.model.Money;
 import me.helioalbano.aggregate.persistence.domain.model.Order;
 import me.helioalbano.aggregate.persistence.domain.model.OrderItem;
 import me.helioalbano.aggregate.persistence.domain.model.Product;
-import me.helioalbano.aggregate.persistence.example.usecases.port.OrderRepository;
+import me.helioalbano.aggregate.persistence.usecases.port.OrderRepository;
 
 public class OrderPersistenceTest {
 

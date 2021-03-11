@@ -1,4 +1,4 @@
-package me.helioalbano.aggregate.persistence.example.usecases.port;
+package me.helioalbano.aggregate.persistence.usecases.port;
 
 import me.helioalbano.aggregate.persistence.domain.model.Order;
 

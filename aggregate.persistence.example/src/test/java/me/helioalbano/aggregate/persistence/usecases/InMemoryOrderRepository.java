@@ -1,9 +1,9 @@
-package me.helioalbano.aggregate.persistence.example.usecases;
+package me.helioalbano.aggregate.persistence.usecases;
 
 import java.util.HashMap;
 
 import me.helioalbano.aggregate.persistence.domain.model.Order;
-import me.helioalbano.aggregate.persistence.example.usecases.port.OrderRepository;
+import me.helioalbano.aggregate.persistence.usecases.port.OrderRepository;
 
 public class InMemoryOrderRepository implements OrderRepository {
 
