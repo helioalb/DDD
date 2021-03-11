@@ -10,7 +10,7 @@ public class OrderTest {
 
 	@Test
 	public void testConstructionOfOrder() {
-		Order order = new Order(new ArrayList<OrderItem>());
+		Order order = new Order(123, new ArrayList<OrderItem>());
 
 		assertEquals(0, order.numberOfItems());
 	}
@@ -54,7 +54,7 @@ public class OrderTest {
 		OrderItem twoBooks = new OrderItem(book, 2);
 		OrderItem onePen = new OrderItem(pen, 1);
 
-		Order order = new Order(new ArrayList<OrderItem>());
+		Order order = new Order(1234, new ArrayList<OrderItem>());
 
 		order.addItem(twoBooks);
 		order.addItem(onePen);

@@ -4,10 +4,12 @@ import java.util.Collections;
 import java.util.List;
 
 public class Order {
+	private Integer number;
 	private List<OrderItem> items;
 	private Money totalCost;
 
-	public Order(List<OrderItem> items) {
+	public Order(Integer number, List<OrderItem> items) {
+		this.number = number;
 		this.items = items;
 		updateTotalCost(items);
 	}
@@ -40,5 +42,9 @@ public class Order {
 	public void removeItem(OrderItem item) {
 		items.remove(item);
 		totalCost = totalCost.minus(item.cost());
+	}
+
+	public Integer getNumber() {
+		return number;
 	}
 }
