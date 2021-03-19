@@ -394,3 +394,72 @@ A definição do Martin Folwer: https://martinfowler.com/bliki/DDD_Aggregate.htm
 Aggregates são grupos de objetos que sempre precisam ser consistentes. Portanto, esse grupo deve ser criado ou atualizado dentro de uma transação.
 
 Fiz [aqui](https://github.com/helioalb/DDD/blob/main/aggregate.persistence.example/src/test/java/me/helioalbano/aggregate/persistence/usecases/OrderPersistenceTest.java#L25-L54) um exemplo de persistencia de um aggreate.
+
+Exemplo de *root entity*. Na relação do [exemplo acima](https://github.com/helioalb/DDD/blob/main/aggregate.persistence.example/src/test/java/me/helioalbano/aggregate/persistence/usecases/OrderPersistenceTest.java#L25-L54) tem as entities:
+
+- Order (Entity)
+  - OrderItems (Entity)
+    - Product (Entity)
+        - price (Value object)
+
+Nesse caso, Order é um *root entity*
+
+Voltando ao conceito de *transaction*: Somente o estado completo da Order faz sentido.
+
+> Dois aggregates não podem estar sob a mesma transação.
+### Aggregate Rules of Thumb
+
+1. Proteja negócios invariantes dentro de *Aggregate boundaries*
+2. Desenhe pequenos *Aggregates* 
+3. Referencie outros *Aggregates* somente por identidade.
+4. Atualize outros *Aggregates* usando consistencia eventual.
+
+#### Rule 1: Protect Business Invariants inside Aggregate Boundaries
+
+Quem determina a composição do aggregate é o negócio. Uma *Order* por exemplo tem que ser salva com todos seus *OrderItems*.
+
+#### Rule 2: Design Small Aggregates
+
+No livro tem um exemplo de aggregate que é: **Product** tem muitos **BacklogItem**, muitas **Release** e muitos **Sprint**. Com o tempo isso pode crescer demais. Isso não é um aggregate eficiente.
+
+Uma boa solução é quebrar esse grande aggregate em quatro menotores: **Product Aggregate**, **BacklogItem Aggregate**, **Release Aggregate** e **Sprint Aggregate**.
+
+As vantagens de pequenos aggregates são:
+- Carregam rapidamente
+- Usam menos memória
+- Tornam o *garbage collector* mais eficiente.
+- (talvez o mais importante) a taxa de sucesso nas transações será bem maior (comparado a um grande aggregate)
+- São mais fáceis de trabalhar (depende de um único programador)
+- São mais fáceis de testar
+- Provavelmente estará seguindo o **SRP**.
+
+Sobre o **SRP** (*Single Responsability Principle*): No caso do grande aggregate citado anteriormente, faça a você mesmo a pergunta:
+
+> Qual é a razão para mudar o **Product**: É para ter um **Scrum product** melhor ou é para gerenciar *backlog items*, *releases* e *sprints*?
+
+#### Rule 3: Reference Other Aggregates by Identity Only
+
+No [exemplo de persistencia de um aggregate](https://github.com/helioalb/DDD/blob/main/aggregate.persistence.example/src/test/java/me/helioalbano/aggregate/persistence/usecases/OrderPersistenceTest.java#L25-L54) esse princípio não foi usado. *Product* por exemplo é carregado completamente em cada *OrderItem*. Para um *JSON-based store* isto é ok, mas para um banco relacional, por exemplo, isso é ruim. Já, o princípio de sempre usar o identificador, serve para qualquer mecanismo de armazenamento.
+
+#### Rule 4: Update Other Aggregates Using Eventual Consistency
+
+Exemplo: Imagine que um **BacklogItem** foi adicionado a um **Sprint**. Na transaction do **BacklogItem** um *Domain Event*, chamado *BacklogItemCommitted* é publicado. Quando o subscriber do *BacklogItemCommitted* o "vê" na fila uma nova transaction é iniciada e o **Sprint** passa a ter o novo *BacklogItemId*.
+
+## Modeling Aggregates
+
+- Evite domínios anemicos (a menos que esteja trabalhando com linguagens funcionais)
+
+- Valores não devem ser setados diretamente. A classe deve alterálos (get publico e set privado)
+
+- Faça as abstrações com bastante cuidado. Isto é, sua abstração deve refletir a linguagem ubíqua. Nada de tentar ser genérico de mais. Ao invés de criar um ScrumElement para representar BacklogItem ou Release, Crie Scrum, BacklogItem e Release. 
+
+## Right-Sizing Aggregates
+ 1. Foque na segunda regra *"Design small Aggregates."* Começe cirando todo aggregate com apenas uma *entity*. Popule os attributos da *entity*. Para os atributos: Pense naquilo que é usado para identificar e encontrar a sua entity.
+2. Agora foque na segunda regra *"Protect business invariants inside Aggregate boundaries"*. Descubra o que deve mudar (em outros aggregates) se houver um update no aggregate atual.
+3. Descubra em quanto tempo após o update do aggregate atual os outros aggregates precisam ser atualizados (imediatamente, 1 segundo, 1 minuto, 1 hora)
+4. Se a responsa ao 3. foi "imediatamente" é recomendável compor o seu aggregate.
+5. Os aggregate restantes (aqueles que não fizeram parte da composição) podem ser atualizados com *consistencia eventual*.
+
+## Testable Units
+
+O aggregate deve ser fácil de testar unitáriamente (unitário é diferente de teste de aceitação)
