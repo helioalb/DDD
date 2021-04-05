@@ -385,9 +385,9 @@ class Endereco {
 }
 ```
 
-Nesse caso, se mudarmos qualquer atributo o endereço passa a ser outro totalmente diferente.
+Nesse caso, se mudarmos qualquer atributo, o endereço passa a ser outro totalmente diferente.
 
-Uma observação. Aggregate não é o aggregation do UML.
+Uma observação: Aggregate não é o aggregation do UML.
 
 A definição do Martin Folwer: https://martinfowler.com/bliki/DDD_Aggregate.html
 
@@ -395,7 +395,7 @@ Aggregates são grupos de objetos que sempre precisam ser consistentes. Portanto
 
 Fiz [aqui](https://github.com/helioalb/DDD/blob/main/aggregate.persistence.example/src/test/java/me/helioalbano/aggregate/persistence/usecases/OrderPersistenceTest.java#L25-L54) um exemplo de persistencia de um aggreate.
 
-Exemplo de *root entity*. Na relação do [exemplo acima](https://github.com/helioalb/DDD/blob/main/aggregate.persistence.example/src/test/java/me/helioalbano/aggregate/persistence/usecases/OrderPersistenceTest.java#L25-L54) tem as entities:
+Exemplo de *root entity*: Na relação do [exemplo acima](https://github.com/helioalb/DDD/blob/main/aggregate.persistence.example/src/test/java/me/helioalbano/aggregate/persistence/usecases/OrderPersistenceTest.java#L25-L54) existe as entities:
 
 - Order (Entity)
   - OrderItems (Entity)
@@ -422,7 +422,7 @@ Quem determina a composição do aggregate é o negócio. Uma *Order* por exempl
 
 No livro tem um exemplo de aggregate que é: **Product** tem muitos **BacklogItem**, muitas **Release** e muitos **Sprint**. Com o tempo isso pode crescer demais. Isso não é um aggregate eficiente.
 
-Uma boa solução é quebrar esse grande aggregate em quatro menotores: **Product Aggregate**, **BacklogItem Aggregate**, **Release Aggregate** e **Sprint Aggregate**.
+Uma boa solução é quebrar esse grande aggregate em quatro menores: **Product Aggregate**, **BacklogItem Aggregate**, **Release Aggregate** e **Sprint Aggregate**.
 
 As vantagens de pequenos aggregates são:
 - Carregam rapidamente
@@ -443,23 +443,71 @@ No [exemplo de persistencia de um aggregate](https://github.com/helioalb/DDD/blo
 
 #### Rule 4: Update Other Aggregates Using Eventual Consistency
 
-Exemplo: Imagine que um **BacklogItem** foi adicionado a um **Sprint**. Na transaction do **BacklogItem** um *Domain Event*, chamado *BacklogItemCommitted* é publicado. Quando o subscriber do *BacklogItemCommitted* o "vê" na fila uma nova transaction é iniciada e o **Sprint** passa a ter o novo *BacklogItemId*.
+Exemplo: Imagine que um **BacklogItem** foi adicionado a um **Sprint**. Na transaction do **BacklogItem** um *Domain Event*, chamado *BacklogItemCommitted* é publicado. Quando o subscriber do *BacklogItemCommitted* o "vê" na fila, uma nova transaction é iniciada e o **Sprint** passa a ter o novo *BacklogItemId*.
 
 ## Modeling Aggregates
 
 - Evite domínios anemicos (a menos que esteja trabalhando com linguagens funcionais)
 
-- Valores não devem ser setados diretamente. A classe deve alterálos (get publico e set privado)
+- Valores não devem ser setados diretamente. A classe deve alterá-los (get publico e set privado)
 
 - Faça as abstrações com bastante cuidado. Isto é, sua abstração deve refletir a linguagem ubíqua. Nada de tentar ser genérico de mais. Ao invés de criar um ScrumElement para representar BacklogItem ou Release, Crie Scrum, BacklogItem e Release. 
 
 ## Right-Sizing Aggregates
  1. Foque na segunda regra *"Design small Aggregates."* Começe cirando todo aggregate com apenas uma *entity*. Popule os attributos da *entity*. Para os atributos: Pense naquilo que é usado para identificar e encontrar a sua entity.
 2. Agora foque na segunda regra *"Protect business invariants inside Aggregate boundaries"*. Descubra o que deve mudar (em outros aggregates) se houver um update no aggregate atual.
-3. Descubra em quanto tempo após o update do aggregate atual os outros aggregates precisam ser atualizados (imediatamente, 1 segundo, 1 minuto, 1 hora)
-4. Se a responsa ao 3. foi "imediatamente" é recomendável compor o seu aggregate.
+3. Descubra em quanto tempo após o update do aggregate atual os outros aggregates precisam ser atualizados (imediatamente, 1 segundo, 1 minuto, 1 hora, ...)
+4. Se a responsa ao 3. foi "imediatamente", é recomendável compor o seu aggregate.
 5. Os aggregate restantes (aqueles que não fizeram parte da composição) podem ser atualizados com *consistencia eventual*.
 
-## Testable Units
+### Testable Units
 
-O aggregate deve ser fácil de testar unitáriamente (unitário é diferente de teste de aceitação)
+O aggregate deve ser fácil de testar unitariamente (unitário é diferente de teste de aceitação)
+
+## Chapter 6. Tactical Design with Domain Events
+
+**Domain Event** é um registro de alguma operação importante dentro de um *Bounded context*.
+
+**causal consistency** Um *busines domain* resulta em *causal consistency* se suas operações, casualmente relacionadas - um operação causa a outra - são vistas por cada node dependente na mesma ordem.
+
+*Causal consistency* pode ser alcançada através da criação e publicação de correta order de *Domain event*.
+
+### Designing, Implementing, and Using Domain Events
+
+```java
+public interface DomainEvent {
+  public Date occurredOn();
+}
+```
+
+O exemplo acima é o mínimo que um *Domain Event* deve suportar.
+
+O nome do *Domain Event* deve ser bem escolhido, baseado na linguagem ubíqua do modelo. Esses nomes são a ponte entre o domínio e o mundo externo.
+
+Exemplos:
+
+- ProductCreated
+- SprintScheduled
+- ReleaseScheduled
+- BacklogItemPlanned
+- BacklogItemCommited
+
+O nome do *Domain event* deve ser o de uma ação que ocorreu no passado, isto é, um verbo no passado (ProductCreated, SprintScheduled...)
+
+Sobre as propriedades que devem estar contidas no *Domain Event*, pergunte a si mesmo: "Qual é a motivação da aplicação que faz com que o *Domain Event* seja publicado?". No caso do `ProductCreated`, por exemplo, existe um comando que causa isso. O comando é chamado `CreateProduct` e o `ProductCreated` é o resultado.
+
+O *Domain Event* deve ter todas as propriedades essenciais que foram fornecidas ao comando que criou o *Domain Event*.
+
+O comando `CreateProduct`, por exemplo, recebeu: `tenantId`, `productId`, `name`(nome do produto) e `description`(descrição do produto). O `ProductCreated`, por sua vez, deve ser:
+
+```java
+class ProductCreated implements DomainEvent {
+  private Integer tenantId;
+  private Integer productId;
+  private String name;
+  private String description;
+
+  public Date ocurredOn() {}
+}
+
+
