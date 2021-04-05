@@ -509,5 +509,93 @@ class ProductCreated implements DomainEvent {
 
   public Date ocurredOn() {}
 }
+```
+
+Alguns exemplos de *Domain Events* relacionados o *Agile Project management Context* (Exemplo base do livro):
+
+```java
+class ProductCreated {
+  tenantId;
+  productId;
+  name;
+  description;
+}
+```
+
+```java
+class SprintScheduled {
+  tenantId;
+  sprintId;
+  productId;
+  name;
+  description;
+  startsOn;
+  endsOn;
+}
+```
+
+```java
+class ReleaseScheduled {
+  tenantId;
+  releaseId;
+  productId;
+  name;
+  description;
+  targetDate;
+}
+```
+
+```java
+class BacklogItemPlanned {
+  tenantId;
+  backlogItemId;
+  productId;
+  sprintId;
+  story;
+  summary;
+}
+```
+
+```java
+class BacklogItemCommited {
+  tenantId;
+  backlogItemId;
+  sprintId;
+}
+```
+
+### Como deve ser o processo de disparo do domain event.
+
+O ideal é que na mesma transação sejam salvos o *aggregate* e o *Domain Event* (o domain event numa *store events*). Depois de tudo salvo, o *Domain Event* é disparado.
+
+### Como garantir *causal order*?
+
+É, também, de responsabilidade dos consumidores intepretar os *Domain Events* para que haja *causal order* .
+
+### Não somente command.
+
+A fonte de um *Domain Event* não é somente um *command* . Um fonte possível é a chegada de um determinado horário. Na *Wall Street*, por exemplo, as negociações terminam às 16:00 hr. Esse horário é conhecido como "Markets Closed". Nesse caso, baseado na linguagem ubíqua já temos o nome do *Domain Event": *MarketsClosed* . Esse *Domain Event* será "disparado" todos os dias às 16:00.
+
+### **Event Sourcing**
+
+*Event Sourcing* pode ser descrito como sendo a persistencia de todos os *Domain Events* que já tenham ocorrido para um *aggregate* . O estado atual de uma instancia de *aggregate* é obtido através da "reconstituição" de todos os *Domain Events* passados.
+
+Todos os *Domain Events* que ocorreram para uma instancia de *aggregate*, ordenados pelo momento em que aconteceram, constituem o *event stream* desse *aggregate*.
+
+Exemplo de como seria o stream numa tabela chamada Event Store:
+
+Stream id|Stream Version|Event Type|Event Content
+--|--|--|--
+backlogItem123|1|BacklogItemPlanned|{...}
+backlogItem123|2|BacklogItemStoryDefined|{...}
+backlogItem123|3|BacklogItemCommited|{...}
+...|N|....|{...}
+...|N|....|{...}
+
+Como a tabela *event store* é *append only*, o armazenamento de informações é rápido.
+
+#### Sobre performance
+
+Será necessário usar estratégias de cache ou snapshots. (O livro cita outro livro que cobre o assunto)
 
 
