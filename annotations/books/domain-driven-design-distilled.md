@@ -598,4 +598,60 @@ Como a tabela *event store* é *append only*, o armazenamento de informações �
 
 Será necessário usar estratégias de cache ou snapshots. (O livro cita outro livro que cobre o assunto)
 
+## Chapter 7. Acceleration and Management Tools
 
+O processo de desenvolvimento é geralente uma corrida contra o tempo.
+Por mais que se tente argumentar que estimativas de tempo são ineficazes, no fim das contas os projetos precisam ser entregues dentro do tempo e orçamento previstos. O problema é que para se atingir isso geralmente a etapa de design é deixada de lado. A seguir, algumas técnicas para agilizar o processo de design de modo que esta etapa não seja negligenciada.
+
+### Event Storming
+
+1. - Em sticks laranja, todos os envolvidos (desenvolvedores e *domain experts*) deverão escrever o máximo de *domain events* possível. Exemplos de *domain events*:     
+      - ProductCreated
+      - PaymentRealized
+      - ShipmentFinished
+      - OrderProcessed.
+    - Tendo todos os sticks laranja prontos é hora de coloca-los em ordem (da esquerda para a direita). Por exemplo:
+      - OrderInitiated
+      - OrderItemAdded
+      - OrderFinished
+      - PaymentRealized
+    - Eventos que acontecem em paralelo com outro evento devem ser colocados um abaixo do outro.
+    - Durante essa fase (sticks laranjas) alguns "furos" no negócio irão aparecer. Quando isso ocorrer, explique o porquê é um problema em sticks vermelhos.
+    - Quando o resultado de um *domain event* inicia um processo, esse *domain event* deverá ser anotado em um stick lilás e deve ficar à esquerda dos processos que ele dispara (os processos também são anotados em stick lilás).
+2. - Em sticks azul claro, escreva os *Commands* que originaram os *Domain events*. Exemplos:
+      - CreateProduct
+      - RealizePayment
+      - StartShipment
+    - Cole os *Commands* do lado esquerdo dos domain events. A não ser que o *Domain Event* tenha sido acontecido por causa de um limite de tempo (relembre o exemplo da bolsa de New York que fecha todo dias as 16 e gera um *Domain Event*), sempre deve haver os pares *Command/Domain Event*, *Command/Domain event*.
+    - Se um *Command* só pode ser executado por uma determinada *role* , um pequeno stick amarelo pode ser colado no canto inferior esquerdo do stick azul claro que identifica o *Command* .
+    - Quando o resultado de um *command* é um processo, esse *command* deve ser anotado em stick lilás e um flecha deve apontar para o processo, que também será anotado em um stick lilás. Novos eventos gerados pelo processo devem estar visualmente relacionados a esse processo.
+    - Os novos eventos que surgirem devem continuar seguindo a ordem (da esquerda para direita)
+    - Se um *command* gera mais de um *domain event*, coloque-o a esquerda dos *domain events* gerados.
+3. - No terceiro passo precisamos associar os *commands* aos *aggregates*. Um comando executado sobre um *aggregate* produzirá os *domain events*.
+    - Talvez o nome *aggregate* soe estranho para os *domain experts* . O nome pode ser trocado por **Entidade**, **dados** ou qualquer outro nome que deixe claro que isso se trata dos dados da aplicação.
+    - Os *aggregates* devem estar em sticks amarelos. O nome do *aggregate* é um substantivo. Exemplos: **Product**, **BacklogItem**.
+    - O stick amarelo com o nome do *aggregate* deve ser colocado atrás de um par *command/domain event*.
+    - Durante o processo é certo que o mesmo *aggregate* irá aparecer várias vezes. **Não** tente agrupar esses *aggregates*. Ao invés disso, repita sempre que necessário.
+    - Durante o processo você perceberá a necessidade de mais *domain events*. Não ignore-os.
+    - Em algum momento pode ser que se perceba que os *aggregates* estão muito complexos. Nessa hora, pare e quebre-os em *aggregates* menores.
+4. - Desenhe linhas que separam os contextos. Use flechas para mostrar a ordem em que um contexto se comunica com o próximo. Os contextos geralmente serão separados por divisões de departamentos. Nesses casos, geralmente as pessoas devinem o mesmo termo de maneiras diferentes.
+    - Use linhas sólidas para separar contextos e linhas pontilhadas para separar subdomínios.
+    - Se não estiver confiante sobre os *bounded context*, escreva o nome do possível *bounded context* em um stick rosa.
+5. - Identifique as *views* que serão uteis aos usuários.
+    - As *views* devem ser anotadas em sticks verdes.
+
+### Given/When/Then specification
+
+Clique [aqui](https://github.com/helioalb/DDD/blob/main/aggregate.persistence.example/src/test/java/me/helioalbano/aggregate/persistence/usecases/OrderPersistenceTest.java#L25-L54) para ver um exemplo.
+
+Em média, essa abordagem adiciona entre 15% e 25% mais tempo ao projeto.
+
+### Distinguindo *core domain* de outros contextos menos relevantes
+
+
+- Impact mapping (tem livro inteiro falando sobre o tema)
+- User story mapping (tem livro inteiro falando sobre o tema)
+
+
+
+A
