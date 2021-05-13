@@ -47,4 +47,8 @@ public class Order {
 	public Integer getNumber() {
 		return number;
 	}
+
+	public void setNumber(Integer orderNumber) {
+		this.number = orderNumber;
+	}
 }
